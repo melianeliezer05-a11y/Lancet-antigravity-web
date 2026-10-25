@@ -416,7 +416,7 @@ export default function LandingCliente() {
             </h1>
 
             <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
-              Soluciones técnicas de alto rendimiento en Gran Canaria. Desde energía solar fotovoltaica y climatización de bajo consumo hasta mantenimiento de maquinaria hostelera y cámaras frigoríficas.
+              Soluciones técnicas de alto rendimiento en toda Andalucía. Desde energía solar fotovoltaica y climatización de bajo consumo hasta mantenimiento de maquinaria hostelera y cámaras frigoríficas.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
