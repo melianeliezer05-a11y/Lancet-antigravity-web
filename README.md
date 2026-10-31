@@ -1,20 +1,39 @@
-<<<<<<< HEAD
-# React + Vite
+# NM Electroclima · web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Web pública y panel interno de NM Electroclima (Néstor Melián): electricidad, energía solar, climatización, refrigeración y maquinaria de hostelería en Andalucía.
 
-Currently, two official plugins are available:
+Repositorio de origen: `melianeliezer05-a11y/Lancet-antigravity-web`. Rediseño completo el 2026-10-30.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Stack
 
-## React Compiler
+React 19 · React Router 7 · Vite 8 · Supabase (tablas `leads_clientes`, `proyectos`, `resenas`) con respaldo en `localStorage`. CSS propio (sin utilidades de Tailwind en la interfaz).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Rutas
 
-## Expanding the ESLint configuration
+- `/` landing pública: portada con esquema unifilar animado, servicios, método, trabajos (desde Supabase), opiniones y aviso urgente.
+- `/admin` panel interno: avisos en tiempo real, publicar o borrar trabajos y ver opiniones.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# Lancet-antigravity-web
->>>>>>> 610d6ec0e4e8994f7058f8490b0db3047852c1d0
+## Sistema visual «plano técnico»
+
+- Papel hueso `#f2efe6`, azul tinta `#0f2740`, azul del logo `#2b7fb8`, naranja del rayo `#f0a12e` (texto naranja sobre papel: `#9a5400`).
+- Tipografías: Archivo (títulos y texto) e IBM Plex Mono (etiquetas técnicas).
+- Cada sección es una «hoja» numerada; las ilustraciones son SVG propios en `src/components/Illustrations.jsx`; la marca en `src/components/Mark.jsx`.
+- Movimiento: dibujo del esquema, pulso de corriente y aparición al hacer scroll; todo se desactiva con `prefers-reduced-motion`.
+- Estilos: `src/index.css` (web pública) y `src/pages/admin.css` (panel).
+
+## Desarrollo
+
+Requiere Node 20 o superior.
+
+```bash
+npm ci
+npm run dev
+npm run build
+npm run lint
+```
+
+## Pendiente conocido
+
+- La clave del panel `/admin` está en el código del cliente (`PanelAdmin.jsx`): cualquiera que abra el JS publicado puede leerla. Migrar a Supabase Auth con políticas RLS.
+- La URL y la clave anónima de Supabase están escritas en `src/supabaseClient.js`; pasarlas a variables `VITE_*`.
+- Faltan fotos reales de trabajos: subirlas desde `/admin`.

@@ -60,7 +60,7 @@ export async function obtenerTrabajos() {
   try {
     const locales = JSON.parse(localStorage.getItem('nmelectroclima_proyectos') || '[]');
     return locales;
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -71,7 +71,7 @@ export async function guardarTrabajo({ titulo, categoria, descripcion, imagenUrl
     categoria: categoria || 'Climatización',
     descripcion: descripcion || '',
     imagen_url: imagenUrl || '',
-    ubicacion: ubicacion || 'Gran Canaria',
+    ubicacion: ubicacion || 'Andalucía',
     creado_en: new Date().toISOString()
   };
 
@@ -133,7 +133,7 @@ export async function obtenerResenas() {
   try {
     const locales = JSON.parse(localStorage.getItem('nmelectroclima_resenas') || '[]');
     return locales;
-  } catch (e) {
+  } catch {
     return [];
   }
 }
@@ -143,7 +143,7 @@ export async function guardarResena({ nombre, calificacion, comentario, ciudad }
     nombre: nombre || 'Cliente Anónimo',
     calificacion: Number(calificacion) || 5,
     comentario: comentario || '',
-    ciudad: ciudad || 'Las Palmas',
+    ciudad: ciudad || '',
     creado_en: new Date().toISOString()
   };
 
