@@ -131,14 +131,43 @@ export default function PanelAdmin() {
     };
   }, [autenticado]);
 
-  // Manejador para cargar foto del ordenador o cámara
+  // Manejador para cargar y optimizar foto del ordenador o cámara
   const handleSeleccionarFoto = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecciona un archivo de imagen válido.');
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagenPreview(reader.result);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        // Redimensionar a un máximo de 1200px para no saturar memoria ni almacenamiento local
+        const maxDim = 1200;
+        let { width, height } = img;
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        setImagenPreview(dataUrl);
+      };
+      img.onerror = () => {
+        setImagenPreview(event.target.result);
+      };
+      img.src = event.target.result;
     };
     reader.readAsDataURL(file);
   };
@@ -151,24 +180,32 @@ export default function PanelAdmin() {
       return;
     }
 
-    setGuardandoTrabajo(true);
-    const resultado = await guardarTrabajo({
-      titulo: nuevoTitulo,
-      categoria: nuevaCategoria,
-      descripcion: nuevaDescripcion,
-      imagenUrl: imagenPreview,
-      ubicacion: nuevaUbicacion,
-    });
+    try {
+      setGuardandoTrabajo(true);
+      const resultado = await guardarTrabajo({
+        titulo: nuevoTitulo,
+        categoria: nuevaCategoria,
+        descripcion: nuevaDescripcion,
+        imagenUrl: imagenPreview,
+        ubicacion: nuevaUbicacion,
+      });
 
-    if (resultado.success) {
-      setTrabajos((prev) => [resultado.trabajo, ...prev]);
-      setNuevoTitulo('');
-      setNuevaDescripcion('');
-      setImagenPreview('');
-      setMensajeExito('¡Trabajo publicado con éxito! Ya es visible en la web para los clientes.');
-      setTimeout(() => setMensajeExito(''), 4000);
+      if (resultado && resultado.success) {
+        setTrabajos((prev) => [resultado.trabajo, ...prev]);
+        setNuevoTitulo('');
+        setNuevaDescripcion('');
+        setImagenPreview('');
+        setMensajeExito('¡Trabajo publicado con éxito! Ya es visible en la web para los clientes.');
+        setTimeout(() => setMensajeExito(''), 4000);
+      } else {
+        alert('No se pudo guardar el trabajo. Revisa la consola para más detalles.');
+      }
+    } catch (err) {
+      console.error('Error al publicar trabajo:', err);
+      alert('Ocurrió un error al publicar el trabajo: ' + (err.message || 'Error desconocido'));
+    } finally {
+      setGuardandoTrabajo(false);
     }
-    setGuardandoTrabajo(false);
   };
 
   const handleEliminarTrabajo = async (id) => {

@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Sustituye estos textos por tus datos reales, sin espacios, ni corchetes
-const supabaseUrl = "https://rhpjlzqndxzpbodjvgcc.supabase.co"
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoYXFudmN3cm5jaGpwb2lqb2VyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MTkzMTEsImV4cCI6MjA5ODQ5NTMxMX0.Jn7PWWtJmFVLCcLqC4lDb8bo1MJ99lLmdSQDiHbiEnE"
+const rawUrl = import.meta.env.VITE_SUPABASE_URL || "https://rhpjlzqndxzpbodjvgcc.supabase.co"
+const supabaseUrl = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '')
 
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "sb_publishable_Wg1U9Nzm7KfKEDH84rb2gw_kgV17kCr"
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)

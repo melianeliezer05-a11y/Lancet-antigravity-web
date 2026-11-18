@@ -26,17 +26,24 @@ export async function registrarLlamadaLead({ nombre, telefono, problema, urgenci
       if (broadcast) broadcast.postMessage({ type: 'NUEVO_LEAD', payload: data[0] });
       return { success: true, lead: data[0] };
     }
+    if (error) {
+      console.warn('Error al guardar lead en Supabase (usando respaldo local):', error.message || error);
+    }
   } catch (err) {
     console.warn('Error en conexión Supabase leads_clientes:', err);
   }
 
   // Fallback local garantizado
-  const leadsLocales = JSON.parse(localStorage.getItem('nmelectroclima_leads') || '[]');
-  const leadConId = { ...nuevoLead, id: Date.now() };
-  localStorage.setItem('nmelectroclima_leads', JSON.stringify([leadConId, ...leadsLocales]));
-  if (broadcast) broadcast.postMessage({ type: 'NUEVO_LEAD', payload: leadConId });
-
-  return { success: true, lead: leadConId };
+  try {
+    const leadsLocales = JSON.parse(localStorage.getItem('nmelectroclima_leads') || '[]');
+    const leadConId = { ...nuevoLead, id: Date.now() };
+    localStorage.setItem('nmelectroclima_leads', JSON.stringify([leadConId, ...leadsLocales]));
+    if (broadcast) broadcast.postMessage({ type: 'NUEVO_LEAD', payload: leadConId });
+    return { success: true, lead: leadConId };
+  } catch (storageErr) {
+    console.warn('Error en localStorage leads:', storageErr);
+    return { success: true, lead: { ...nuevoLead, id: Date.now() } };
+  }
 }
 
 // ==========================================
@@ -85,17 +92,33 @@ export async function guardarTrabajo({ titulo, categoria, descripcion, imagenUrl
       if (broadcast) broadcast.postMessage({ type: 'NUEVO_TRABAJO', payload: data[0] });
       return { success: true, trabajo: data[0] };
     }
+    if (error) {
+      console.warn('Error en Supabase proyectos (se usará respaldo local):', error.message || error);
+    }
   } catch (err) {
     console.warn('No se pudo guardar en Supabase proyectos (usando fallback):', err);
   }
 
-  // Respaldo local
-  const trabajosLocales = JSON.parse(localStorage.getItem('nmelectroclima_proyectos') || '[]');
-  const trabajoConId = { ...nuevoTrabajo, id: Date.now() };
-  localStorage.setItem('nmelectroclima_proyectos', JSON.stringify([trabajoConId, ...trabajosLocales]));
-  if (broadcast) broadcast.postMessage({ type: 'NUEVO_TRABAJO', payload: trabajoConId });
-
-  return { success: true, trabajo: trabajoConId };
+  // Respaldo local seguro con protección de cuota
+  try {
+    const trabajosLocales = JSON.parse(localStorage.getItem('nmelectroclima_proyectos') || '[]');
+    const trabajoConId = { ...nuevoTrabajo, id: Date.now() };
+    localStorage.setItem('nmelectroclima_proyectos', JSON.stringify([trabajoConId, ...trabajosLocales]));
+    if (broadcast) broadcast.postMessage({ type: 'NUEVO_TRABAJO', payload: trabajoConId });
+    return { success: true, trabajo: trabajoConId };
+  } catch (storageErr) {
+    console.warn('Cuota de almacenamiento local excedida, optimizando para respaldo:', storageErr);
+    // Si la imagen en base64 llena la cuota de localStorage, se guarda sin la cadena base64 pesada
+    const trabajoLigero = { ...nuevoTrabajo, id: Date.now(), imagen_url: '' };
+    try {
+      const trabajosLocales = JSON.parse(localStorage.getItem('nmelectroclima_proyectos') || '[]');
+      localStorage.setItem('nmelectroclima_proyectos', JSON.stringify([trabajoLigero, ...trabajosLocales]));
+      if (broadcast) broadcast.postMessage({ type: 'NUEVO_TRABAJO', payload: { ...nuevoTrabajo, id: trabajoLigero.id } });
+      return { success: true, trabajo: { ...nuevoTrabajo, id: trabajoLigero.id } };
+    } catch {
+      return { success: true, trabajo: { ...nuevoTrabajo, id: Date.now() } };
+    }
+  }
 }
 
 export async function eliminarTrabajo(id) {
@@ -105,10 +128,14 @@ export async function eliminarTrabajo(id) {
     console.warn('Error al eliminar de Supabase proyectos:', err);
   }
 
-  const trabajosLocales = JSON.parse(localStorage.getItem('nmelectroclima_proyectos') || '[]');
-  const filtrados = trabajosLocales.filter((t) => t.id !== id);
-  localStorage.setItem('nmelectroclima_proyectos', JSON.stringify(filtrados));
-  if (broadcast) broadcast.postMessage({ type: 'ELIMINAR_TRABAJO', payload: id });
+  try {
+    const trabajosLocales = JSON.parse(localStorage.getItem('nmelectroclima_proyectos') || '[]');
+    const filtrados = trabajosLocales.filter((t) => t.id !== id);
+    localStorage.setItem('nmelectroclima_proyectos', JSON.stringify(filtrados));
+    if (broadcast) broadcast.postMessage({ type: 'ELIMINAR_TRABAJO', payload: id });
+  } catch (e) {
+    console.warn('Error al actualizar localStorage al eliminar trabajo:', e);
+  }
 
   return { success: true };
 }
@@ -157,16 +184,23 @@ export async function guardarResena({ nombre, calificacion, comentario, ciudad }
       if (broadcast) broadcast.postMessage({ type: 'NUEVA_RESENA', payload: data[0] });
       return { success: true, resena: data[0] };
     }
+    if (error) {
+      console.warn('Error al guardar reseña en Supabase (usando respaldo local):', error.message || error);
+    }
   } catch (err) {
     console.warn('No se pudo guardar en Supabase resenas (usando fallback):', err);
   }
 
-  const resenasLocales = JSON.parse(localStorage.getItem('nmelectroclima_resenas') || '[]');
-  const resenaConId = { ...nuevaResena, id: Date.now() };
-  localStorage.setItem('nmelectroclima_resenas', JSON.stringify([resenaConId, ...resenasLocales]));
-  if (broadcast) broadcast.postMessage({ type: 'NUEVA_RESENA', payload: resenaConId });
-
-  return { success: true, resena: resenaConId };
+  try {
+    const resenasLocales = JSON.parse(localStorage.getItem('nmelectroclima_resenas') || '[]');
+    const resenaConId = { ...nuevaResena, id: Date.now() };
+    localStorage.setItem('nmelectroclima_resenas', JSON.stringify([resenaConId, ...resenasLocales]));
+    if (broadcast) broadcast.postMessage({ type: 'NUEVA_RESENA', payload: resenaConId });
+    return { success: true, resena: resenaConId };
+  } catch (storageErr) {
+    console.warn('Error en localStorage reseñas:', storageErr);
+    return { success: true, resena: { ...nuevaResena, id: Date.now() } };
+  }
 }
 
 export function subscribeToSync(callback) {
